@@ -1,6 +1,6 @@
-# [Project name]
+# Food Truck Wars Multiplayer
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Food Truck Wars is a live classroom strategy simulation for up to ten team players and one host master.
 
 ## Run & Operate
 
@@ -22,23 +22,31 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/foodtruck-wars` — the responsive host and player game experience.
+- `artifacts/api-server/src/lib/foodtruck-game.ts` — the in-memory game engine and demand/capital model.
+- `artifacts/api-server/src/routes/games.ts` — room, round, decision, shock, and scoring endpoints.
+- `lib/api-spec/openapi.yaml` — source of truth for the generated API client and Zod contracts.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The room supports ten teams plus one host master; teams can join until the game starts.
+- Each team starts with ₹10,00,000 and carries its cash balance across rounds.
+- Round 2+ decision forms preload the prior round's decisions so earlier strategy and spend remain relevant.
+- Decisions are private to the submitting team until the host resolves the round; state is polled every two seconds for simple cross-browser synchronization.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Hosts create rooms, share a short room code, start rounds, choose the round-three disruption, monitor submissions, resolve results, score the final pitch, and reveal the leaderboard. Teams join with a name, make private business decisions, track capital and spend, and see the impact of each round.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- The workshop uses ten teams and one master host.
+- Starting capital is ₹10,00,000 per team, with marketing spend and all operating expenses carried forward through the game.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- The API game state is held in memory for the current server process; restarting the API clears active rooms.
+- The server must be running before using the web preview because the game UI calls the shared `/api` service.
 
 ## Pointers
 

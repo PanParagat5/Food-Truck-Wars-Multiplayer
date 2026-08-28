@@ -19,7 +19,6 @@ export * from './gameSessionRole';
 export * from './gameState';
 export * from './gameStateStatus';
 export * from './gameStateViewerRole';
-export * from './getGameStateParams';
 export * from './healthStatus';
 export * from './hostActionInput';
 export * from './leaderboardRow';

@@ -17,4 +17,7 @@ export interface Player {
   latestRevenue: number;
   cumulativeProfit: number;
   totalScore: number;
+  startingCapital: number;
+  cashBalance: number;
+  roundSpend: number;
 }

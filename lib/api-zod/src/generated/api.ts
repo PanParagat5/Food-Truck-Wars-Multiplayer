@@ -78,14 +78,10 @@ export const GetGameStateParams = zod.object({
   "code": zod.coerce.string().min(getGameStatePathCodeMin).max(getGameStatePathCodeMax)
 })
 
-export const GetGameStateQueryParams = zod.object({
-  "token": zod.coerce.string()
-})
-
 export const GetGameStateResponse = zod.object({
   "code": zod.string(),
   "status": zod.enum(['lobby', 'decisions', 'revealed', 'complete']),
-  "activeRound": zod.int(),
+  "activeRound": zod.number(),
   "roundLabel": zod.string(),
   "shock": zod.string(),
   "viewerRole": zod.enum(['host', 'player']),
@@ -93,24 +89,27 @@ export const GetGameStateResponse = zod.object({
   "players": zod.array(zod.object({
   "id": zod.string(),
   "name": zod.string(),
-  "seat": zod.int(),
+  "seat": zod.number(),
   "isHost": zod.boolean(),
   "connected": zod.boolean(),
   "submitted": zod.boolean(),
   "latestProfit": zod.number(),
   "latestRevenue": zod.number(),
   "cumulativeProfit": zod.number(),
-  "totalScore": zod.number()
+  "totalScore": zod.number(),
+  "startingCapital": zod.number(),
+  "cashBalance": zod.number(),
+  "roundSpend": zod.number()
 })),
   "ownDecision": zod.union([zod.object({
   "location": zod.string(),
   "menu": zod.string(),
   "price": zod.number(),
   "promotionSpend": zod.number(),
-  "capacity": zod.int()
+  "capacity": zod.number()
 }),zod.null()]),
   "history": zod.array(zod.object({
-  "round": zod.int(),
+  "round": zod.number(),
   "label": zod.string(),
   "shock": zod.string(),
   "results": zod.array(zod.object({
@@ -119,7 +118,7 @@ export const GetGameStateResponse = zod.object({
   "menu": zod.string(),
   "price": zod.number(),
   "promotionSpend": zod.number(),
-  "capacity": zod.int(),
+  "capacity": zod.number(),
   "segment": zod.string(),
   "effectiveFootfall": zod.number(),
   "potentialDemand": zod.number(),
@@ -134,7 +133,7 @@ export const GetGameStateResponse = zod.object({
 }))
 })),
   "leaderboard": zod.array(zod.object({
-  "rank": zod.int(),
+  "rank": zod.number(),
   "playerId": zod.string(),
   "name": zod.string(),
   "cumulativeProfit": zod.number(),
@@ -167,7 +166,7 @@ export const StartGameBody = zod.object({
 export const StartGameResponse = zod.object({
   "code": zod.string(),
   "status": zod.enum(['lobby', 'decisions', 'revealed', 'complete']),
-  "activeRound": zod.int(),
+  "activeRound": zod.number(),
   "roundLabel": zod.string(),
   "shock": zod.string(),
   "viewerRole": zod.enum(['host', 'player']),
@@ -175,24 +174,27 @@ export const StartGameResponse = zod.object({
   "players": zod.array(zod.object({
   "id": zod.string(),
   "name": zod.string(),
-  "seat": zod.int(),
+  "seat": zod.number(),
   "isHost": zod.boolean(),
   "connected": zod.boolean(),
   "submitted": zod.boolean(),
   "latestProfit": zod.number(),
   "latestRevenue": zod.number(),
   "cumulativeProfit": zod.number(),
-  "totalScore": zod.number()
+  "totalScore": zod.number(),
+  "startingCapital": zod.number(),
+  "cashBalance": zod.number(),
+  "roundSpend": zod.number()
 })),
   "ownDecision": zod.union([zod.object({
   "location": zod.string(),
   "menu": zod.string(),
   "price": zod.number(),
   "promotionSpend": zod.number(),
-  "capacity": zod.int()
+  "capacity": zod.number()
 }),zod.null()]),
   "history": zod.array(zod.object({
-  "round": zod.int(),
+  "round": zod.number(),
   "label": zod.string(),
   "shock": zod.string(),
   "results": zod.array(zod.object({
@@ -201,7 +203,7 @@ export const StartGameResponse = zod.object({
   "menu": zod.string(),
   "price": zod.number(),
   "promotionSpend": zod.number(),
-  "capacity": zod.int(),
+  "capacity": zod.number(),
   "segment": zod.string(),
   "effectiveFootfall": zod.number(),
   "potentialDemand": zod.number(),
@@ -216,7 +218,7 @@ export const StartGameResponse = zod.object({
 }))
 })),
   "leaderboard": zod.array(zod.object({
-  "rank": zod.int(),
+  "rank": zod.number(),
   "playerId": zod.string(),
   "name": zod.string(),
   "cumulativeProfit": zod.number(),
@@ -254,13 +256,13 @@ export const SubmitDecisionBody = zod.object({
   "menu": zod.enum(['Trendy & Affordable', 'Quality & Convenience', 'Variety & Hygiene', 'Healthy Options']),
   "price": zod.number().min(1),
   "promotionSpend": zod.number().min(submitDecisionBodyPromotionSpendMin),
-  "capacity": zod.int().min(1)
+  "capacity": zod.number().min(1)
 })
 
 export const SubmitDecisionResponse = zod.object({
   "code": zod.string(),
   "status": zod.enum(['lobby', 'decisions', 'revealed', 'complete']),
-  "activeRound": zod.int(),
+  "activeRound": zod.number(),
   "roundLabel": zod.string(),
   "shock": zod.string(),
   "viewerRole": zod.enum(['host', 'player']),
@@ -268,24 +270,27 @@ export const SubmitDecisionResponse = zod.object({
   "players": zod.array(zod.object({
   "id": zod.string(),
   "name": zod.string(),
-  "seat": zod.int(),
+  "seat": zod.number(),
   "isHost": zod.boolean(),
   "connected": zod.boolean(),
   "submitted": zod.boolean(),
   "latestProfit": zod.number(),
   "latestRevenue": zod.number(),
   "cumulativeProfit": zod.number(),
-  "totalScore": zod.number()
+  "totalScore": zod.number(),
+  "startingCapital": zod.number(),
+  "cashBalance": zod.number(),
+  "roundSpend": zod.number()
 })),
   "ownDecision": zod.union([zod.object({
   "location": zod.string(),
   "menu": zod.string(),
   "price": zod.number(),
   "promotionSpend": zod.number(),
-  "capacity": zod.int()
+  "capacity": zod.number()
 }),zod.null()]),
   "history": zod.array(zod.object({
-  "round": zod.int(),
+  "round": zod.number(),
   "label": zod.string(),
   "shock": zod.string(),
   "results": zod.array(zod.object({
@@ -294,7 +299,7 @@ export const SubmitDecisionResponse = zod.object({
   "menu": zod.string(),
   "price": zod.number(),
   "promotionSpend": zod.number(),
-  "capacity": zod.int(),
+  "capacity": zod.number(),
   "segment": zod.string(),
   "effectiveFootfall": zod.number(),
   "potentialDemand": zod.number(),
@@ -309,7 +314,7 @@ export const SubmitDecisionResponse = zod.object({
 }))
 })),
   "leaderboard": zod.array(zod.object({
-  "rank": zod.int(),
+  "rank": zod.number(),
   "playerId": zod.string(),
   "name": zod.string(),
   "cumulativeProfit": zod.number(),
@@ -342,7 +347,7 @@ export const AdvanceRoundBody = zod.object({
 export const AdvanceRoundResponse = zod.object({
   "code": zod.string(),
   "status": zod.enum(['lobby', 'decisions', 'revealed', 'complete']),
-  "activeRound": zod.int(),
+  "activeRound": zod.number(),
   "roundLabel": zod.string(),
   "shock": zod.string(),
   "viewerRole": zod.enum(['host', 'player']),
@@ -350,24 +355,27 @@ export const AdvanceRoundResponse = zod.object({
   "players": zod.array(zod.object({
   "id": zod.string(),
   "name": zod.string(),
-  "seat": zod.int(),
+  "seat": zod.number(),
   "isHost": zod.boolean(),
   "connected": zod.boolean(),
   "submitted": zod.boolean(),
   "latestProfit": zod.number(),
   "latestRevenue": zod.number(),
   "cumulativeProfit": zod.number(),
-  "totalScore": zod.number()
+  "totalScore": zod.number(),
+  "startingCapital": zod.number(),
+  "cashBalance": zod.number(),
+  "roundSpend": zod.number()
 })),
   "ownDecision": zod.union([zod.object({
   "location": zod.string(),
   "menu": zod.string(),
   "price": zod.number(),
   "promotionSpend": zod.number(),
-  "capacity": zod.int()
+  "capacity": zod.number()
 }),zod.null()]),
   "history": zod.array(zod.object({
-  "round": zod.int(),
+  "round": zod.number(),
   "label": zod.string(),
   "shock": zod.string(),
   "results": zod.array(zod.object({
@@ -376,7 +384,7 @@ export const AdvanceRoundResponse = zod.object({
   "menu": zod.string(),
   "price": zod.number(),
   "promotionSpend": zod.number(),
-  "capacity": zod.int(),
+  "capacity": zod.number(),
   "segment": zod.string(),
   "effectiveFootfall": zod.number(),
   "potentialDemand": zod.number(),
@@ -391,7 +399,7 @@ export const AdvanceRoundResponse = zod.object({
 }))
 })),
   "leaderboard": zod.array(zod.object({
-  "rank": zod.int(),
+  "rank": zod.number(),
   "playerId": zod.string(),
   "name": zod.string(),
   "cumulativeProfit": zod.number(),
@@ -425,7 +433,7 @@ export const ChooseShockBody = zod.object({
 export const ChooseShockResponse = zod.object({
   "code": zod.string(),
   "status": zod.enum(['lobby', 'decisions', 'revealed', 'complete']),
-  "activeRound": zod.int(),
+  "activeRound": zod.number(),
   "roundLabel": zod.string(),
   "shock": zod.string(),
   "viewerRole": zod.enum(['host', 'player']),
@@ -433,24 +441,27 @@ export const ChooseShockResponse = zod.object({
   "players": zod.array(zod.object({
   "id": zod.string(),
   "name": zod.string(),
-  "seat": zod.int(),
+  "seat": zod.number(),
   "isHost": zod.boolean(),
   "connected": zod.boolean(),
   "submitted": zod.boolean(),
   "latestProfit": zod.number(),
   "latestRevenue": zod.number(),
   "cumulativeProfit": zod.number(),
-  "totalScore": zod.number()
+  "totalScore": zod.number(),
+  "startingCapital": zod.number(),
+  "cashBalance": zod.number(),
+  "roundSpend": zod.number()
 })),
   "ownDecision": zod.union([zod.object({
   "location": zod.string(),
   "menu": zod.string(),
   "price": zod.number(),
   "promotionSpend": zod.number(),
-  "capacity": zod.int()
+  "capacity": zod.number()
 }),zod.null()]),
   "history": zod.array(zod.object({
-  "round": zod.int(),
+  "round": zod.number(),
   "label": zod.string(),
   "shock": zod.string(),
   "results": zod.array(zod.object({
@@ -459,7 +470,7 @@ export const ChooseShockResponse = zod.object({
   "menu": zod.string(),
   "price": zod.number(),
   "promotionSpend": zod.number(),
-  "capacity": zod.int(),
+  "capacity": zod.number(),
   "segment": zod.string(),
   "effectiveFootfall": zod.number(),
   "potentialDemand": zod.number(),
@@ -474,7 +485,7 @@ export const ChooseShockResponse = zod.object({
 }))
 })),
   "leaderboard": zod.array(zod.object({
-  "rank": zod.int(),
+  "rank": zod.number(),
   "playerId": zod.string(),
   "name": zod.string(),
   "cumulativeProfit": zod.number(),
@@ -512,15 +523,15 @@ export const ScoreTeamsBody = zod.object({
   "token": zod.string(),
   "scores": zod.array(zod.object({
   "playerId": zod.string(),
-  "strategicQuality": zod.int().min(scoreTeamsBodyScoresItemStrategicQualityMin).max(scoreTeamsBodyScoresItemStrategicQualityMax),
-  "collaboration": zod.int().min(scoreTeamsBodyScoresItemCollaborationMin).max(scoreTeamsBodyScoresItemCollaborationMax)
+  "strategicQuality": zod.number().min(scoreTeamsBodyScoresItemStrategicQualityMin).max(scoreTeamsBodyScoresItemStrategicQualityMax),
+  "collaboration": zod.number().min(scoreTeamsBodyScoresItemCollaborationMin).max(scoreTeamsBodyScoresItemCollaborationMax)
 }))
 })
 
 export const ScoreTeamsResponse = zod.object({
   "code": zod.string(),
   "status": zod.enum(['lobby', 'decisions', 'revealed', 'complete']),
-  "activeRound": zod.int(),
+  "activeRound": zod.number(),
   "roundLabel": zod.string(),
   "shock": zod.string(),
   "viewerRole": zod.enum(['host', 'player']),
@@ -528,24 +539,27 @@ export const ScoreTeamsResponse = zod.object({
   "players": zod.array(zod.object({
   "id": zod.string(),
   "name": zod.string(),
-  "seat": zod.int(),
+  "seat": zod.number(),
   "isHost": zod.boolean(),
   "connected": zod.boolean(),
   "submitted": zod.boolean(),
   "latestProfit": zod.number(),
   "latestRevenue": zod.number(),
   "cumulativeProfit": zod.number(),
-  "totalScore": zod.number()
+  "totalScore": zod.number(),
+  "startingCapital": zod.number(),
+  "cashBalance": zod.number(),
+  "roundSpend": zod.number()
 })),
   "ownDecision": zod.union([zod.object({
   "location": zod.string(),
   "menu": zod.string(),
   "price": zod.number(),
   "promotionSpend": zod.number(),
-  "capacity": zod.int()
+  "capacity": zod.number()
 }),zod.null()]),
   "history": zod.array(zod.object({
-  "round": zod.int(),
+  "round": zod.number(),
   "label": zod.string(),
   "shock": zod.string(),
   "results": zod.array(zod.object({
@@ -554,7 +568,7 @@ export const ScoreTeamsResponse = zod.object({
   "menu": zod.string(),
   "price": zod.number(),
   "promotionSpend": zod.number(),
-  "capacity": zod.int(),
+  "capacity": zod.number(),
   "segment": zod.string(),
   "effectiveFootfall": zod.number(),
   "potentialDemand": zod.number(),
@@ -569,7 +583,7 @@ export const ScoreTeamsResponse = zod.object({
 }))
 })),
   "leaderboard": zod.array(zod.object({
-  "rank": zod.int(),
+  "rank": zod.number(),
   "playerId": zod.string(),
   "name": zod.string(),
   "cumulativeProfit": zod.number(),

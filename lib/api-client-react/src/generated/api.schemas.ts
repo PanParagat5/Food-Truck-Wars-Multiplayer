@@ -110,6 +110,9 @@ export interface Player {
   latestRevenue: number;
   cumulativeProfit: number;
   totalScore: number;
+  startingCapital: number;
+  cashBalance: number;
+  roundSpend: number;
 }
 
 export interface Decision {
@@ -212,8 +215,4 @@ export interface GameState {
  * Request failed
  */
 export type ErrorResponseResponse = Error;
-
-export type GetGameStateParams = {
-token: string;
-};
 
