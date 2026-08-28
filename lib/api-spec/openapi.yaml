@@ -75,11 +75,6 @@ paths:
       summary: Get the current game state for a host or player
       parameters:
         - $ref: "#/components/parameters/GameCode"
-        - name: token
-          in: query
-          required: true
-          schema:
-            type: string
       responses:
         "200":
           description: Current game state
@@ -274,7 +269,7 @@ components:
           type: number
           minimum: 0
         capacity:
-          type: integer
+          type: number
           minimum: 1
       required: [token, location, menu, price, promotionSpend, capacity]
       additionalProperties: false
@@ -298,11 +293,11 @@ components:
         playerId:
           type: string
         strategicQuality:
-          type: integer
+          type: number
           minimum: 0
           maximum: 15
         collaboration:
-          type: integer
+          type: number
           minimum: 0
           maximum: 10
       required: [playerId, strategicQuality, collaboration]
@@ -326,7 +321,7 @@ components:
         name:
           type: string
         seat:
-          type: integer
+          type: number
         isHost:
           type: boolean
         connected:
@@ -341,7 +336,13 @@ components:
           type: number
         totalScore:
           type: number
-      required: [id, name, seat, isHost, connected, submitted, latestProfit, latestRevenue, cumulativeProfit, totalScore]
+        startingCapital:
+          type: number
+        cashBalance:
+          type: number
+        roundSpend:
+          type: number
+      required: [id, name, seat, isHost, connected, submitted, latestProfit, latestRevenue, cumulativeProfit, totalScore, startingCapital, cashBalance, roundSpend]
     Decision:
       type: object
       properties:
@@ -354,7 +355,7 @@ components:
         promotionSpend:
           type: number
         capacity:
-          type: integer
+          type: number
       required: [location, menu, price, promotionSpend, capacity]
     RoundResult:
       type: object
@@ -370,7 +371,7 @@ components:
         promotionSpend:
           type: number
         capacity:
-          type: integer
+          type: number
         segment:
           type: string
         effectiveFootfall:
@@ -398,7 +399,7 @@ components:
       type: object
       properties:
         round:
-          type: integer
+          type: number
         label:
           type: string
         shock:
@@ -412,7 +413,7 @@ components:
       type: object
       properties:
         rank:
-          type: integer
+          type: number
         playerId:
           type: string
         name:
@@ -456,7 +457,7 @@ components:
           type: string
           enum: [lobby, decisions, revealed, complete]
         activeRound:
-          type: integer
+          type: number
         roundLabel:
           type: string
         shock:
