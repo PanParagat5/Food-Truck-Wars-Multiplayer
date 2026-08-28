@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: games
+    description: Multiplayer Food Truck Wars game rooms
 paths:
   /healthz:
     get:
@@ -24,7 +26,198 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /games:
+    post:
+      operationId: createGame
+      tags: [games]
+      summary: Create a new Food Truck Wars room
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameCreateInput"
+      responses:
+        "201":
+          description: Created game room
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameSession"
+  /games/{code}/join:
+    post:
+      operationId: joinGame
+      tags: [games]
+      summary: Join an open player seat in a game room
+      parameters:
+        - $ref: "#/components/parameters/GameCode"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameJoinInput"
+      responses:
+        "200":
+          description: Joined game room
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameSession"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+  /games/{code}/state:
+    get:
+      operationId: getGameState
+      tags: [games]
+      summary: Get the current game state for a host or player
+      parameters:
+        - $ref: "#/components/parameters/GameCode"
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameState"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+  /games/{code}/start:
+    post:
+      operationId: startGame
+      tags: [games]
+      summary: Start the game from the lobby
+      parameters:
+        - $ref: "#/components/parameters/GameCode"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HostActionInput"
+      responses:
+        "200":
+          description: Started game
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameState"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+  /games/{code}/decisions:
+    post:
+      operationId: submitDecision
+      tags: [games]
+      summary: Submit or update a team's decisions for the active round
+      parameters:
+        - $ref: "#/components/parameters/GameCode"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DecisionInput"
+      responses:
+        "200":
+          description: Updated game state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameState"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+  /games/{code}/advance:
+    post:
+      operationId: advanceRound
+      tags: [games]
+      summary: Resolve the round and reveal results, or move to the next round
+      parameters:
+        - $ref: "#/components/parameters/GameCode"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HostActionInput"
+      responses:
+        "200":
+          description: Resolved or advanced game state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameState"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+  /games/{code}/shock:
+    post:
+      operationId: chooseShock
+      tags: [games]
+      summary: Choose the market disruption for round three
+      parameters:
+        - $ref: "#/components/parameters/GameCode"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShockInput"
+      responses:
+        "200":
+          description: Updated game state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameState"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+  /games/{code}/scores:
+    post:
+      operationId: scoreTeams
+      tags: [games]
+      summary: Record host-judged final scores
+      parameters:
+        - $ref: "#/components/parameters/GameCode"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScoreInput"
+      responses:
+        "200":
+          description: Updated game state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameState"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
 components:
+  parameters:
+    GameCode:
+      name: code
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 4
+        maxLength: 8
+  responses:
+    ErrorResponse:
+      description: Request failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +226,261 @@ components:
           type: string
       required:
         - status
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    GameCreateInput:
+      type: object
+      properties:
+        hostName:
+          type: string
+          minLength: 1
+          maxLength: 40
+      additionalProperties: false
+    GameJoinInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 40
+      required: [name]
+      additionalProperties: false
+    HostActionInput:
+      type: object
+      properties:
+        token:
+          type: string
+      required: [token]
+      additionalProperties: false
+    DecisionInput:
+      type: object
+      properties:
+        token:
+          type: string
+        location:
+          type: string
+          enum: [College Campus, IT Park, Residential Area, Health Club Zone]
+        menu:
+          type: string
+          enum: [Trendy & Affordable, Quality & Convenience, Variety & Hygiene, Healthy Options]
+        price:
+          type: number
+          minimum: 1
+        promotionSpend:
+          type: number
+          minimum: 0
+        capacity:
+          type: integer
+          minimum: 1
+      required: [token, location, menu, price, promotionSpend, capacity]
+      additionalProperties: false
+    ShockInput:
+      type: object
+      properties:
+        token:
+          type: string
+        shock:
+          type: string
+          enum:
+            - None
+            - Delivery App Discount (-20% footfall)
+            - College Event Surge (+50% footfall)
+            - Ingredient Price Spike (+30% unit cost)
+      required: [token, shock]
+      additionalProperties: false
+    TeamScoreInput:
+      type: object
+      properties:
+        playerId:
+          type: string
+        strategicQuality:
+          type: integer
+          minimum: 0
+          maximum: 15
+        collaboration:
+          type: integer
+          minimum: 0
+          maximum: 10
+      required: [playerId, strategicQuality, collaboration]
+      additionalProperties: false
+    ScoreInput:
+      type: object
+      properties:
+        token:
+          type: string
+        scores:
+          type: array
+          items:
+            $ref: "#/components/schemas/TeamScoreInput"
+      required: [token, scores]
+      additionalProperties: false
+    Player:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        seat:
+          type: integer
+        isHost:
+          type: boolean
+        connected:
+          type: boolean
+        submitted:
+          type: boolean
+        latestProfit:
+          type: number
+        latestRevenue:
+          type: number
+        cumulativeProfit:
+          type: number
+        totalScore:
+          type: number
+      required: [id, name, seat, isHost, connected, submitted, latestProfit, latestRevenue, cumulativeProfit, totalScore]
+    Decision:
+      type: object
+      properties:
+        location:
+          type: string
+        menu:
+          type: string
+        price:
+          type: number
+        promotionSpend:
+          type: number
+        capacity:
+          type: integer
+      required: [location, menu, price, promotionSpend, capacity]
+    RoundResult:
+      type: object
+      properties:
+        playerId:
+          type: string
+        location:
+          type: string
+        menu:
+          type: string
+        price:
+          type: number
+        promotionSpend:
+          type: number
+        capacity:
+          type: integer
+        segment:
+          type: string
+        effectiveFootfall:
+          type: number
+        potentialDemand:
+          type: number
+        unitsSold:
+          type: number
+        revenue:
+          type: number
+        variableCost:
+          type: number
+        capacityCost:
+          type: number
+        fixedCost:
+          type: number
+        profit:
+          type: number
+        csat:
+          type: number
+        marketShare:
+          type: number
+      required: [playerId, location, menu, price, promotionSpend, capacity, segment, effectiveFootfall, potentialDemand, unitsSold, revenue, variableCost, capacityCost, fixedCost, profit, csat, marketShare]
+    RoundHistory:
+      type: object
+      properties:
+        round:
+          type: integer
+        label:
+          type: string
+        shock:
+          type: string
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoundResult"
+      required: [round, label, shock, results]
+    LeaderboardRow:
+      type: object
+      properties:
+        rank:
+          type: integer
+        playerId:
+          type: string
+        name:
+          type: string
+        cumulativeProfit:
+          type: number
+        revenueGrowth:
+          type: number
+        averageMarketShare:
+          type: number
+        averageCsat:
+          type: number
+        strategicQuality:
+          type: number
+        collaboration:
+          type: number
+        totalScore:
+          type: number
+      required: [rank, playerId, name, cumulativeProfit, revenueGrowth, averageMarketShare, averageCsat, strategicQuality, collaboration, totalScore]
+    GameSession:
+      type: object
+      properties:
+        code:
+          type: string
+        token:
+          type: string
+        role:
+          type: string
+          enum: [host, player]
+        playerId:
+          type: string
+        name:
+          type: string
+      required: [code, token, role, playerId, name]
+    GameState:
+      type: object
+      properties:
+        code:
+          type: string
+        status:
+          type: string
+          enum: [lobby, decisions, revealed, complete]
+        activeRound:
+          type: integer
+        roundLabel:
+          type: string
+        shock:
+          type: string
+        viewerRole:
+          type: string
+          enum: [host, player]
+        viewerPlayerId:
+          type: string
+        players:
+          type: array
+          items:
+            $ref: "#/components/schemas/Player"
+        ownDecision:
+          oneOf:
+            - $ref: "#/components/schemas/Decision"
+            - type: "null"
+        history:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoundHistory"
+        leaderboard:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeaderboardRow"
+      required: [code, status, activeRound, roundLabel, shock, viewerRole, viewerPlayerId, players, ownDecision, history, leaderboard]
 

@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Food Truck Wars Multiplayer"
+description = "A live multiplayer strategy simulation for five food-truck teams and one host. Teams make private location, menu, pricing, promotion, and capacity decisions across four rounds while the host runs market events and reveals results."
+version = "1.0.0"
+id = "artifacts/foodtruck-wars"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18431
+
+[services.development]
+run = "pnpm --filter @workspace/foodtruck-wars run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/foodtruck-wars", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/foodtruck-wars/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18431"
+BASE_PATH = "/"
