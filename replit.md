@@ -30,7 +30,7 @@ Food Truck Wars is a live classroom strategy simulation for up to ten team playe
 ## Architecture decisions
 
 - The room supports ten teams plus one host master; teams can join until the game starts.
-- Each team starts with ₹10,00,000 and carries its cash balance across rounds.
+- Each team starts with ₹2,00,000 and carries its cash balance across rounds.
 - Round 2+ decision forms preload the prior round's decisions so earlier strategy and spend remain relevant.
 - Decisions are private to the submitting team until the host resolves the round; state is polled every two seconds for simple cross-browser synchronization.
 
@@ -41,7 +41,7 @@ Hosts create rooms, share a short room code, start rounds, choose the round-thre
 ## User preferences
 
 - The workshop uses ten teams and one master host.
-- Starting capital is ₹10,00,000 per team, with marketing spend and all operating expenses carried forward through the game.
+- Starting capital is ₹2,00,000 per team, with marketing spend and all operating expenses carried forward through the game.
 
 ## Gotchas
 

@@ -91,7 +91,7 @@ export type Game = {
   createdAt: number;
 };
 
-const STARTING_CAPITAL = 1_000_000;
+const STARTING_CAPITAL = 200_000;
 const FIXED_COST = 8_000;
 const CAPACITY_UNIT_COST = 15;
 

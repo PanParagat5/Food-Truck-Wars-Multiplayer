@@ -26,6 +26,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { formatINR, cn } from '@/lib/utils';
 import { Loader2, Store, Users, DollarSign, TrendingUp, AlertTriangle, CheckCircle2, Award, Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { MARKET_REFERENCE } from '@/lib/market-reference';
 
 export default function Game() {
   const params = useParams();
@@ -107,7 +108,7 @@ function GameHeader({ gameState, session, me }: { gameState: GameState, session:
                 <div className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <span className="font-bold text-primary">{gameState.roundLabel}</span>
                   {gameState.shock && gameState.shock !== 'None' && (
-                    <Badge variant="destructive" className="scale-75 origin-left">Active Shock</Badge>
+                    <Badge variant="destructive" className="scale-75 origin-left">Market Shock: {gameState.shock}</Badge>
                   )}
                 </div>
               )}
@@ -330,7 +331,9 @@ function HostDecisionsView({ gameState, session }: { gameState: GameState, sessi
               </Button>
             </div>
             {gameState.shock !== 'None' && (
-              <p className="mt-4 text-sm font-bold text-destructive">Current Shock: {gameState.shock}</p>
+              <p className="mt-4 text-sm font-bold text-destructive">
+                Visible to every team now: {gameState.shock}
+              </p>
             )}
           </CardContent>
         </Card>
@@ -352,7 +355,7 @@ function PlayerDecisionsView({ gameState, session }: { gameState: GameState, ses
   const [menu, setMenu] = useState<DecisionInputMenu>(
     (gameState.ownDecision?.menu as DecisionInputMenu) || DecisionInputMenu['Trendy_&_Affordable']
   );
-  const [price, setPrice] = useState<number>(gameState.ownDecision?.price || 150);
+  const [price, setPrice] = useState<number>(gameState.ownDecision?.price || 60);
   const [promotionSpend, setPromotionSpend] = useState<number>(gameState.ownDecision?.promotionSpend || 5000);
   const [capacity, setCapacity] = useState<number>(gameState.ownDecision?.capacity || 100);
 
@@ -395,6 +398,14 @@ function PlayerDecisionsView({ gameState, session }: { gameState: GameState, ses
   };
 
   const isLocked = me?.submitted;
+  const locationReference = MARKET_REFERENCE.locations[location as keyof typeof MARKET_REFERENCE.locations];
+  const menuReference = MARKET_REFERENCE.menus[menu as keyof typeof MARKET_REFERENCE.menus];
+  const segmentReference = MARKET_REFERENCE.segments[locationReference.segment as keyof typeof MARKET_REFERENCE.segments];
+  const committedSpend = promotionSpend + capacity * MARKET_REFERENCE.capacityUnitCost + MARKET_REFERENCE.fixedCost;
+  const availableCash = me?.cashBalance ?? 0;
+  const isOverBudget = committedSpend > availableCash;
+  const priceInIdealRange = price >= segmentReference.min && price <= segmentReference.max;
+  const menuMatchesSegment = menuReference.segment === locationReference.segment;
 
   return (
     <div className="max-w-3xl mx-auto animate-in fade-in duration-300">
@@ -407,6 +418,83 @@ function PlayerDecisionsView({ gameState, session }: { gameState: GameState, ses
           <p className="text-muted-foreground mt-2">Strategize for {gameState.roundLabel}</p>
         </CardHeader>
         <CardContent className="pt-6">
+          {gameState.shock !== 'None' && (
+            <div className="mb-8 rounded-xl border-4 border-destructive bg-destructive/10 p-4 text-destructive">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-display font-black uppercase tracking-wide">Market disruption is active</p>
+                  <p className="mt-1 font-bold">{gameState.shock}</p>
+                  <p className="mt-1 text-sm">This event is visible to every team and affects this round’s results.</p>
+                </div>
+              </div>
+            </div>
+          )}
+          <details open className="mb-8 overflow-hidden rounded-xl border-2 border-border bg-card">
+            <summary className="cursor-pointer bg-muted/60 px-4 py-3 font-display font-black uppercase tracking-wide">
+              Market Reference & Limits
+            </summary>
+            <div className="grid gap-6 p-4 lg:grid-cols-3">
+              <div className="space-y-2">
+                <p className="text-sm font-black uppercase tracking-wide text-primary">Locations</p>
+                {Object.entries(MARKET_REFERENCE.locations).map(([name, reference]) => (
+                  <div key={name} className="rounded-lg border border-border p-3">
+                    <p className="font-bold">{name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Footfall {reference.footfall.toLocaleString('en-IN')} · {reference.segment}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-black uppercase tracking-wide text-primary">Menu Types</p>
+                {Object.entries(MARKET_REFERENCE.menus).map(([name, reference]) => (
+                  <div key={name} className="rounded-lg border border-border p-3">
+                    <p className="font-bold">{name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {reference.segment} · Unit cost {formatINR(reference.unitCost)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-black uppercase tracking-wide text-primary">Customer Price Bands</p>
+                {Object.entries(MARKET_REFERENCE.segments).map(([name, reference]) => (
+                  <div key={name} className="rounded-lg border border-border p-3">
+                    <p className="font-bold">{name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {formatINR(reference.min)}–{formatINR(reference.max)} · {reference.sensitivity} sensitivity
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="border-t-2 border-border bg-muted/30 px-4 py-3 text-xs font-bold text-muted-foreground">
+              Fixed cost {formatINR(MARKET_REFERENCE.fixedCost)}/round · Capacity {formatINR(MARKET_REFERENCE.capacityUnitCost)}/unit · Promotion is charged in full and reaches its maximum +20% demand boost at {formatINR(MARKET_REFERENCE.promotionBoostCap)}.
+            </div>
+          </details>
+          <div className="mb-8 rounded-xl border-2 border-primary/30 bg-primary/5 p-4">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase tracking-wider text-muted-foreground">Plan commitment</p>
+                <p className={cn("font-display text-2xl font-black", isOverBudget ? "text-destructive" : "text-green-700")}>
+                  {formatINR(committedSpend)}
+                </p>
+                <p className="text-xs font-bold text-muted-foreground">
+                  Fixed {formatINR(MARKET_REFERENCE.fixedCost)} + capacity {formatINR(capacity * MARKET_REFERENCE.capacityUnitCost)} + promotion {formatINR(promotionSpend)}
+                </p>
+              </div>
+              <div className="text-left md:text-right">
+                <p className="text-xs font-black uppercase tracking-wider text-muted-foreground">Available cash</p>
+                <p className="font-display text-xl font-black">{formatINR(availableCash)}</p>
+                <p className={cn("text-sm font-bold", isOverBudget ? "text-destructive" : "text-green-700")}>
+                  {isOverBudget
+                    ? `Over limit by ${formatINR(committedSpend - availableCash)}`
+                    : `Remaining after lock: ${formatINR(availableCash - committedSpend)}`}
+                </p>
+              </div>
+            </div>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-8">
             
             <div className="grid md:grid-cols-2 gap-8">
@@ -428,6 +516,9 @@ function PlayerDecisionsView({ gameState, session }: { gameState: GameState, ses
                       <option key={l} value={l}>{l}</option>
                     ))}
                   </Select>
+                  <p className="text-xs font-bold text-muted-foreground">
+                    {locationReference.footfall.toLocaleString('en-IN')} daily footfall · Dominant segment: {locationReference.segment}
+                  </p>
                 </div>
                 
                 <div className="space-y-3">
@@ -441,6 +532,9 @@ function PlayerDecisionsView({ gameState, session }: { gameState: GameState, ses
                       <option key={m} value={m}>{m}</option>
                     ))}
                   </Select>
+                  <p className={cn("text-xs font-bold", menuMatchesSegment ? "text-green-700" : "text-amber-700")}>
+                    Unit cost {formatINR(menuReference.unitCost)} · {menuMatchesSegment ? "Matches the location’s dominant segment" : `Serves ${menuReference.segment}, not ${locationReference.segment}`}
+                  </p>
                 </div>
               </div>
 
@@ -461,6 +555,9 @@ function PlayerDecisionsView({ gameState, session }: { gameState: GameState, ses
                     disabled={isLocked}
                     className="font-display font-bold text-lg"
                   />
+                  <p className={cn("text-xs font-bold", priceInIdealRange ? "text-green-700" : "text-amber-700")}>
+                    Ideal for {locationReference.segment}: {formatINR(segmentReference.min)}–{formatINR(segmentReference.max)} · {priceInIdealRange ? "Within ideal range" : "Outside ideal range; demand and CSAT may fall"}
+                  </p>
                 </div>
 
                 <div className="space-y-3">
@@ -473,6 +570,9 @@ function PlayerDecisionsView({ gameState, session }: { gameState: GameState, ses
                     disabled={isLocked}
                     className="font-display font-bold text-lg"
                   />
+                  <p className="text-xs font-bold text-muted-foreground">
+                    Capacity procurement: {formatINR(MARKET_REFERENCE.capacityUnitCost)} per unit
+                  </p>
                 </div>
 
                 <div className="space-y-3">
@@ -485,6 +585,9 @@ function PlayerDecisionsView({ gameState, session }: { gameState: GameState, ses
                     disabled={isLocked}
                     className="font-display font-bold text-lg"
                   />
+                  <p className="text-xs font-bold text-muted-foreground">
+                    Promotion boosts demand up to +20% at {formatINR(MARKET_REFERENCE.promotionBoostCap)}; extra spend gives no additional boost.
+                  </p>
                 </div>
               </div>
             </div>
@@ -494,7 +597,7 @@ function PlayerDecisionsView({ gameState, session }: { gameState: GameState, ses
                 type="submit" 
                 size="lg" 
                 className="w-full text-xl h-16"
-                disabled={isLocked || isSubmitting}
+                disabled={isLocked || isSubmitting || isOverBudget}
                 variant={isLocked ? "outline" : "default"}
               >
                 {isLocked ? 'Decisions Locked' : (isSubmitting ? 'Locking...' : 'Lock Decisions')}
@@ -502,6 +605,11 @@ function PlayerDecisionsView({ gameState, session }: { gameState: GameState, ses
               {isLocked && (
                 <p className="text-center text-sm text-muted-foreground mt-4 font-bold">
                   Waiting for other teams and host to advance...
+                </p>
+              )}
+              {!isLocked && isOverBudget && (
+                <p className="text-center text-sm font-black text-destructive mt-4">
+                  Reduce promotion or capacity before locking: this plan exceeds available cash.
                 </p>
               )}
             </div>
