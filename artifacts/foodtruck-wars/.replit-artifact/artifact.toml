@@ -1,7 +1,7 @@
 kind = "web"
 previewPath = "/"
 title = "Food Truck Wars Multiplayer"
-description = "A live multiplayer strategy simulation for five food-truck teams and one host. Teams make private location, menu, pricing, promotion, and capacity decisions across four rounds while the host runs market events and reveals results."
+description = "A live multiplayer strategy simulation for ten food-truck teams and one host. Teams make private location, menu, pricing, promotion, and capacity decisions across four rounds while the host runs market events and reveals results."
 version = "1.0.0"
 id = "artifacts/foodtruck-wars"
 router = "path"

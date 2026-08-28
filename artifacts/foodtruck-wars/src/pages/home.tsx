@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useCreateGame, useJoinGame } from '@workspace/api-client-react';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,11 @@ export default function Home() {
 
   // We use a temporary dummy session hook just to get the save method
   const { saveSession } = useGameSession();
+
+  useEffect(() => {
+    const room = new URLSearchParams(window.location.search).get('room');
+    if (room) setJoinCode(room.toUpperCase());
+  }, []);
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +93,7 @@ export default function Home() {
               <Users className="text-foreground" size={24} />
             </div>
             <CardTitle className="text-2xl">Join a Game</CardTitle>
-            <CardDescription>Enter a room code to play</CardDescription>
+            <CardDescription>Enter a room code or use the host's invite link</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleJoin} className="space-y-4">

@@ -24,7 +24,7 @@ import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { formatINR, cn } from '@/lib/utils';
-import { Loader2, Store, Users, DollarSign, TrendingUp, AlertTriangle, CheckCircle2, Award } from 'lucide-react';
+import { Loader2, Store, Users, DollarSign, TrendingUp, AlertTriangle, CheckCircle2, Award, Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Game() {
@@ -152,9 +152,29 @@ function GameHeader({ gameState, session, me }: { gameState: GameState, session:
 function LobbyView({ gameState, session, isHost }: { gameState: GameState, session: GameSession, isHost: boolean }) {
   const startGame = useStartGame();
   const players = gameState.players.filter(p => !p.isHost);
+  const [copied, setCopied] = useState(false);
 
   const handleStart = () => {
     startGame.mutate({ code: gameState.code, data: { token: session.token } });
+  };
+
+  const copyInviteLink = async () => {
+    const url = new URL(window.location.href);
+    const gamePath = `/game/${encodeURIComponent(gameState.code)}`;
+    const gamePathIndex = url.pathname.indexOf(gamePath);
+    url.pathname = gamePathIndex >= 0
+      ? `${url.pathname.slice(0, gamePathIndex)}/`
+      : url.pathname;
+    url.search = new URLSearchParams({ room: gameState.code }).toString();
+    url.hash = '';
+
+    try {
+      await navigator.clipboard.writeText(url.toString());
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2200);
+    } catch {
+      setCopied(false);
+    }
   };
 
   return (
@@ -168,6 +188,13 @@ function LobbyView({ gameState, session, isHost }: { gameState: GameState, sessi
           <p className="text-sm font-bold text-muted-foreground mt-2 uppercase tracking-wider">
             {players.length} / 10 team seats filled
           </p>
+          <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Button type="button" variant="outline" onClick={copyInviteLink} className="gap-2">
+              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              {copied ? 'Invite Link Copied' : 'Copy Invite Link'}
+            </Button>
+            <span className="text-xs text-muted-foreground">Send this link to all 10 teams</span>
+          </div>
         </CardHeader>
         <CardContent className="pt-8">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
